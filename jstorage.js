@@ -697,7 +697,6 @@
          */
         set: function(key, value, options) {
             key = this.prefix + key;
-            console.log('set', key);
             _checkKey(key);
 
             options = options || {};
@@ -873,10 +872,8 @@
         index: function() {
             var index = [],
                 i;
-                console.log(_storage);
             for (i in _storage) {
                 if (_storage.hasOwnProperty(i) && i != '__jstorage_meta') {
-                  console.log('k', i);
                     index.push(i.substring(this.prefix.length));
                 }
             }
