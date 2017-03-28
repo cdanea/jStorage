@@ -954,7 +954,7 @@
          * @param {Function} callback Function to run when the something is published to the channel
          */
         subscribe: function(channel, callback) {
-            channel = (channel || '').toString();
+            channel = (channel || '').toString(); // also pefix channels
             channel = this.prefix + channel;
             if (!channel) {
                 throw new TypeError('Channel not defined');
