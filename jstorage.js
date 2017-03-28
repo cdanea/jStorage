@@ -43,7 +43,7 @@
     var
     /* jStorage version */
         JSTORAGE_VERSION = '0.4.12',
-
+        JSTORAGE_PREFIX = window.JSTORAGE_PREFIX || '',
         /* detect a dollar object or create one if not found */
         $ = window.jQuery || window.$ || (window.$ = {}),
 
@@ -682,6 +682,7 @@
     $.jStorage = {
         /* Version number */
         version: JSTORAGE_VERSION,
+        prefix: JSTORAGE_PREFIX,
 
         /**
          * Sets a key's value.
@@ -695,6 +696,7 @@
          * @return {Mixed} the used value
          */
         set: function(key, value, options) {
+            key = this.prefix + key;
             _checkKey(key);
 
             options = options || {};
@@ -735,6 +737,7 @@
          * @return {Mixed} the key value, default value or null
          */
         get: function(key, def) {
+          key = this.prefix + key;
             _checkKey(key);
             if (key in _storage) {
                 if (_storage[key] && typeof _storage[key] == 'object' && _storage[key]._is_xml) {
@@ -753,6 +756,7 @@
          * @return {Boolean} true if key existed or false if it didn't
          */
         deleteKey: function(key) {
+          key = this.prefix + key;
             _checkKey(key);
             if (key in _storage) {
                 delete _storage[key];
@@ -780,6 +784,7 @@
          * @return {Boolean} true if key existed or false if it didn't
          */
         setTTL: function(key, ttl) {
+          key = this.prefix + key;
             var curtime = +new Date();
             _checkKey(key);
             ttl = Number(ttl) || 0;
@@ -813,6 +818,7 @@
          * @return {Number} Remaining TTL in milliseconds
          */
         getTTL: function(key) {
+          key = this.prefix + key;
             var curtime = +new Date(),
                 ttl;
             _checkKey(key);
@@ -846,9 +852,13 @@
          * @return {Object} Read-only copy of _storage
          */
         storageObj: function() {
-            function F() {}
-            F.prototype = _storage;
-            return new F();
+          var F = {}, i;
+          for (i in _storage) {
+              if (_storage.hasOwnProperty(i) && i != '__jstorage_meta') {
+                F[i.substr(0, this.prefix.length)] = _storage[i];
+              }
+          }
+          return F;
         },
 
         /**
@@ -862,7 +872,7 @@
                 i;
             for (i in _storage) {
                 if (_storage.hasOwnProperty(i) && i != '__jstorage_meta') {
-                    index.push(i);
+                    index.push(i.substr(0, this.prefix.length));
                 }
             }
             return index;
@@ -903,6 +913,7 @@
          * @param {Function} callback Function to run when the key changes
          */
         listenKeyChange: function(key, callback) {
+          key = this.prefix + key;
             _checkKey(key);
             if (!_observers[key]) {
                 _observers[key] = [];
@@ -917,6 +928,7 @@
          * @param {Function} [callback] If set, unregister the callback, if not - unregister all
          */
         stopListening: function(key, callback) {
+          key = this.prefix + key;
             _checkKey(key);
 
             if (!_observers[key]) {
@@ -943,6 +955,7 @@
          */
         subscribe: function(channel, callback) {
             channel = (channel || '').toString();
+            channel = this.prefix + channel;
             if (!channel) {
                 throw new TypeError('Channel not defined');
             }
@@ -960,6 +973,7 @@
          */
         publish: function(channel, payload) {
             channel = (channel || '').toString();
+            channel = this.prefix + channel;
             if (!channel) {
                 throw new TypeError('Channel not defined');
             }
