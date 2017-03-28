@@ -697,6 +697,7 @@
          */
         set: function(key, value, options) {
             key = this.prefix + key;
+            console.log('set', key);
             _checkKey(key);
 
             options = options || {};
@@ -723,7 +724,7 @@
 
             _storage.__jstorage_meta.CRC32[key] = '2.' + murmurhash2_32_gc(JSON.stringify(value), 0x9747b28c);
 
-            this.setTTL(key, options.TTL || 0); // also handles saving and _publishChange
+            this.setTTL(key, options.TTL || 0, true); // also handles saving and _publishChange
 
             _fireObservers(key, 'updated');
             return value;
@@ -783,8 +784,10 @@
          * @param {Number} ttl - TTL timeout in milliseconds
          * @return {Boolean} true if key existed or false if it didn't
          */
-        setTTL: function(key, ttl) {
-          key = this.prefix + key;
+        setTTL: function(key, ttl, dontPrefix) {
+          if(!dontPrefix) {
+            key = this.prefix + key;
+          }
             var curtime = +new Date();
             _checkKey(key);
             ttl = Number(ttl) || 0;
@@ -855,7 +858,7 @@
           var F = {}, i;
           for (i in _storage) {
               if (_storage.hasOwnProperty(i) && i != '__jstorage_meta') {
-                F[i.substr(0, this.prefix.length)] = _storage[i];
+                F[i.substring(this.prefix.length)] = _storage[i];
               }
           }
           return F;
@@ -870,9 +873,11 @@
         index: function() {
             var index = [],
                 i;
+                console.log(_storage);
             for (i in _storage) {
                 if (_storage.hasOwnProperty(i) && i != '__jstorage_meta') {
-                    index.push(i.substr(0, this.prefix.length));
+                  console.log('k', i);
+                    index.push(i.substring(this.prefix.length));
                 }
             }
             return index;
